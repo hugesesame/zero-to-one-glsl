@@ -290,6 +290,20 @@ body.scrubbing,body.scrubbing *{cursor:ew-resize!important;user-select:none!impo
 .toc-id{font-family:var(--mono);font-size:11px;color:var(--muted);width:26px;flex-shrink:0}
 .toc-st{margin-left:auto;width:16px;height:16px;border-radius:50%;border:1px solid var(--line2);flex-shrink:0;display:grid;place-items:center}
 .toc-l.done .toc-st{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.help-panel{width:min(1000px,100%)}
+.help-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.help-sec{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--bg);font-size:13px;line-height:1.75;color:var(--text2)}
+.help-sec h3{margin:0 0 8px;font-size:14px;color:var(--text)}
+.help-sec ul,.help-sec ol{margin:0;padding-left:18px}
+.help-sec li{margin:3px 0}
+.help-sec b{color:var(--text);font-weight:600}
+.help-sec code{font-size:.9em;background:#181b23;border:1px solid var(--line2);border-radius:4px;padding:0 5px;color:#d5f7ea}
+.help-wide{grid-column:1/-1}
+.help-keys{width:100%;border-collapse:collapse}
+.help-keys td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.help-keys td:nth-child(odd){white-space:nowrap;width:1%}
+.help-note{margin:10px 0 0;font-size:12px;color:var(--muted)}
+@media (max-width:760px){.help-keys td{display:block;width:auto;border:0;padding:2px 0}.help-keys tr{display:block;padding:6px 0;border-bottom:1px solid var(--line)}.help-label{display:none}}
 .toc-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;font-size:12px;color:var(--muted)}
 
 .intro{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#07080a;transition:opacity .6s ease}
@@ -332,6 +346,7 @@ body.scrubbing,body.scrubbing *{cursor:ew-resize!important;user-select:none!impo
     </div>
     <div class="grow"></div>
     <div class="progress"><span id="progText">0 / 0</span><div class="pbar"><i id="progBar"></i></div></div>
+    <button class="btn" id="btnHelp" data-i18n-title="help.open"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.4"/><circle cx="8" cy="11.6" r=".5" fill="currentColor"/></svg><span class="help-label" data-i18n="help"></span></button>
     <div class="lang" role="group" aria-label="Language"><button class="lang-btn" data-lang="en">EN</button><button class="lang-btn" data-lang="ja">日本語</button></div>
     <button class="btn" id="btnAppFull" data-i18n-title="appFull.title"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg><span id="btnAppFullLabel"></span></button>
   </header>
@@ -416,6 +431,16 @@ body.scrubbing,body.scrubbing *{cursor:ew-resize!important;user-select:none!impo
       <span data-i18n="toc.foot"></span>
       <button class="btn ghost danger" id="btnResetAll"></button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="help" hidden>
+  <div class="toc-panel help-panel" role="dialog" data-i18n-aria="help.title">
+    <div class="toc-head">
+      <div><div class="toc-title" data-i18n="help.title"></div><div class="toc-sub" data-i18n="help.sub"></div></div>
+      <button class="icbtn" data-close data-i18n-title="toc.close"><svg width="12" height="12" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+    <div id="helpBody"></div>
   </div>
 </div>
 
@@ -549,6 +574,7 @@ const UI = {
     'insp.you': 'YOUR CODE', 'insp.target': 'TARGET',
     'info.drag': '<b>Drag a number</b> to change it (Shift = 10×)', 'info.run': `${MOD}+Enter run`, 'info.comment': `${MOD}+/ comment`, 'info.undo': `${MOD}+Z undo`,
     graph: 'Graph', 'docs.search': 'Search by name, or by words like "distance" or "repeat"', 'docs.none': 'Nothing found',
+    help: 'Help', 'help.open': 'How to use this app ( ? )', 'help.title': 'How to use', 'help.sub': 'Everything you can do in ZERO to ONE',
   },
   ja: {
     'toc.open': '目次を開く', prev: '前のレッスン（ , または ← キー）', next: '次のレッスン（ . または → キー）',
@@ -600,6 +626,7 @@ const UI = {
     'insp.you': 'あなたのコード', 'insp.target': 'お手本',
     'info.drag': '<b>数字をドラッグ</b> で値を調整（Shift で 10倍）', 'info.run': `${MOD}+Enter 実行`, 'info.comment': `${MOD}+/ コメント`, 'info.undo': `${MOD}+Z 元に戻す`,
     graph: 'グラフ', 'docs.search': '関数名や「距離」「繰り返し」などで検索', 'docs.none': '見つかりませんでした',
+    help: 'ヘルプ', 'help.open': 'このアプリの使い方（ ? キー）', 'help.title': '使い方', 'help.sub': 'ZERO to ONE でできること',
   },
 };
 function T(k, ...a) {
@@ -699,6 +726,7 @@ ${cmp(
 <li>左：レッスンと課題（いまここ）</li>
 <li>中央：コードエディタ。書き換えると<b>自動で反映</b>されます</li>
 <li>右上：プレビュー。右下：エラー説明・グラフ・関数辞典</li>
+<li>使い方に迷ったら、いちばん上の「<b>ヘルプ</b>」（または <kbd>?</kbd> キー）</li>
 </ul>`,
   task: 'エディタの<b>オレンジ色の数字</b>の上にマウスを置いて、<b>左右にドラッグ</b>してみましょう。色がリアルタイムに変わります。好きな色ができたら「できた！」を押して次へ。',
   code: C`
@@ -2043,6 +2071,7 @@ ${cmpE(
 <li>Left: the lesson and your task (you are here)</li>
 <li>Middle: the code editor. Your changes are <b>applied automatically</b></li>
 <li>Top right: the preview. Bottom right: error help, graph and function reference</li>
+<li>Not sure how something works? Open <b>Help</b> at the top (or press <kbd>?</kbd>)</li>
 </ul>`,
   task: 'Hover over one of the <b>orange numbers</b> in the editor and <b>drag left or right</b>. The color changes in real time. When you like the color, press "I did it!" and move on.',
   hints: [],
@@ -4089,6 +4118,162 @@ $('#introActs').addEventListener('click', e => {
 });
 
 /* =========================================================
+   Help (shown in the current language)
+   ========================================================= */
+const K = s => `<kbd>${s}</kbd>`;
+const HELP = {
+  en: () => `
+<div class="help-grid">
+  <section class="help-sec">
+    <h3>How a lesson works</h3>
+    <ol>
+      <li><b>Read</b> the lesson on the left.</li>
+      <li><b>Edit</b> the code in the middle. It runs automatically when you stop typing.</li>
+      <li><b>Do the task.</b> In "recreate the target" tasks, your image is compared with the <b>Target</b> (bottom right of the preview). Reach a <b>100% match</b> to clear. In free tasks, press <b>"I did it!"</b>.</li>
+      <li><b>Stuck?</b> "Show a hint" opens hints one by one. The last one is the answer, and you can put it straight into the editor.</li>
+      <li><b>Going further</b> has ideas for remixing what you just learned.</li>
+    </ol>
+    <p class="help-note">No lesson is locked — you can move on any time.</p>
+  </section>
+  <section class="help-sec">
+    <h3>Editing code</h3>
+    <ul>
+      <li><b>Drag an orange number</b> left or right to change it (${K('Shift')} = 10× faster). The number of decimals sets the step: <code>0.5</code> → 0.1, <code>0.50</code> → 0.01.</li>
+      <li>Put the cursor on a function name (e.g. <code>smoothstep</code>) to see what it does at the bottom of the editor.</li>
+      <li>Errors turn the line <b>red</b> and are explained in the <b>Console</b>. Click "Line N" to jump there.</li>
+      <li><b>Starter code</b> brings back the lesson's original code (${K(MOD + '+Z')} undoes it).</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>Preview</h3>
+    <ul>
+      <li><b>⏸ / ▶</b> pause or play time, <b>⏮</b> reset time to 0.</li>
+      <li><b>Grid</b> overlays the coordinates.</li>
+      <li><b>Pixel inspector</b>: hover the preview to see a pixel's position and color values.</li>
+      <li><b>Target</b> shows or hides the target image.</li>
+      <li><b>Camera</b> saves a PNG.</li>
+      <li><b>Full screen</b>, or double-click the preview (${K('Esc')} to go back). The button at the top right makes the whole workspace full screen.</li>
+      <li>Moving the mouse over the preview changes <code>iMouse</code>.</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>Bottom panel</h3>
+    <ul>
+      <li><b>Console</b>: whether your code compiled, and what to fix if not.</li>
+      <li><b>Graph</b>: type any expression with <code>x</code> to see its shape (<code>t</code> is time). The "See graph" buttons in lessons open it.</li>
+      <li><b>Reference</b>: every function used in the course, with search.</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>Saving &amp; sharing</h3>
+    <ul>
+      <li>Your progress and code are <b>saved automatically</b> in this browser (clearing site data erases them).</li>
+      <li><b>☰</b> (top left) opens the contents — jump to any lesson. You can reset your progress there.</li>
+      <li><b>Share</b> copies a link that contains your code.</li>
+      <li><b>EN / 日本語</b> switches the language at any time.</li>
+      <li>Lesson 7-3 can copy your code for <b>TouchDesigner</b>'s GLSL TOP.</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>About the code</h3>
+    <ul>
+      <li>The format is the same as <b>Shadertoy</b>: <code>void mainImage(out vec4 fragColor, in vec2 fragCoord)</code>.</li>
+      <li>Ready to use: <code>iTime</code>, <code>iResolution</code>, <code>iMouse</code>, <code>iFrame</code>.</li>
+      <li>Runs on WebGL2 (GLSL ES 3.00) in recent Chrome, Edge, Firefox and Safari.</li>
+    </ul>
+  </section>
+  <section class="help-sec help-wide">
+    <h3>Keyboard shortcuts</h3>
+    <table class="help-keys">
+      <tr><td>${K(',')} / ${K('←')}</td><td>Previous lesson</td><td>${K(MOD + '+Enter')}</td><td>Run now</td></tr>
+      <tr><td>${K('.')} / ${K('→')}</td><td>Next lesson</td><td>${K(MOD + '+Z')} / ${K(MOD + '+Shift+Z')}</td><td>Undo / redo</td></tr>
+      <tr><td>${K('Space')}</td><td>Pause / play</td><td>${K(MOD + '+/')}</td><td>Comment / uncomment lines</td></tr>
+      <tr><td>${K('?')}</td><td>Open this help</td><td>${K('Tab')} / ${K('Shift+Tab')}</td><td>Indent / outdent</td></tr>
+      <tr><td>${K('Esc')}</td><td>Close a window</td><td>${K(MOD + '+S')}</td><td>Save (also automatic)</td></tr>
+    </table>
+    <p class="help-note">The shortcuts on the left work when you are not typing in the editor. Click the preview or the lesson text first.</p>
+  </section>
+</div>`,
+  ja: () => `
+<div class="help-grid">
+  <section class="help-sec">
+    <h3>レッスンの進め方</h3>
+    <ol>
+      <li>左のレッスンを<b>読む</b>。</li>
+      <li>中央のコードを<b>書き換える</b>。入力が止まると自動で実行されます。</li>
+      <li><b>課題に挑戦。</b>「お手本を再現しよう」の課題では、あなたの映像とプレビュー右下の<b>お手本</b>を自動で比べます。<b>一致度 100%</b> でクリア。「自由に試そう」の課題は<b>「できた！」</b>を押します。</li>
+      <li><b>困ったら</b>「ヒントを見る」で1つずつヒントが開きます。最後は答えで、そのままエディタに入れることもできます。</li>
+      <li><b>「もっと先へ」</b>には、学んだことを応用するアイデアがあります。</li>
+    </ol>
+    <p class="help-note">ロックされたレッスンはありません。いつでも先へ進めます。</p>
+  </section>
+  <section class="help-sec">
+    <h3>コードの編集</h3>
+    <ul>
+      <li><b>オレンジ色の数字を左右にドラッグ</b>すると値が変わります（${K('Shift')} で 10倍速）。小数の桁数で細かさが決まります：<code>0.5</code> → 0.1 刻み、<code>0.50</code> → 0.01 刻み。</li>
+      <li>関数名（例：<code>smoothstep</code>）にカーソルを置くと、エディタの下に説明が出ます。</li>
+      <li>エラーがあると行が<b>赤く</b>なり、<b>コンソール</b>に原因と直し方が出ます。「○行目」を押すとその行へジャンプ。</li>
+      <li><b>最初のコード</b>でレッスンの元のコードに戻せます（${K(MOD + '+Z')} で取り消し可）。</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>プレビュー</h3>
+    <ul>
+      <li><b>⏸ / ▶</b> で時間の一時停止・再生、<b>⏮</b> で時間を 0 に。</li>
+      <li><b>グリッド</b>：座標の目盛りを重ねる。</li>
+      <li><b>ピクセル検査</b>：マウスを乗せたピクセルの位置と色の値を表示。</li>
+      <li><b>お手本</b>：お手本の小窓の表示・非表示。</li>
+      <li><b>カメラ</b>：PNG 画像で保存。</li>
+      <li><b>全画面</b>、またはプレビューをダブルクリック（${K('Esc')} で戻る）。右上のボタンは作業画面全体を全画面にします。</li>
+      <li>プレビューの上でマウスを動かすと <code>iMouse</code> が変わります。</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>下のパネル</h3>
+    <ul>
+      <li><b>コンソール</b>：コンパイルできたか、できなければ何を直せばいいか。</li>
+      <li><b>グラフ</b>：<code>x</code> を使った式を書くと形が見える（<code>t</code> は時間）。レッスン中の「グラフで見る」ボタンからも開きます。</li>
+      <li><b>関数辞典</b>：このコースで使う関数の一覧（検索つき）。</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>保存と共有</h3>
+    <ul>
+      <li>進捗とコードは、このブラウザに<b>自動で保存</b>されます（サイトのデータを消すと消えます）。</li>
+      <li>左上の <b>☰</b> で目次を開き、好きなレッスンへ移動。進捗のリセットもここから。</li>
+      <li><b>共有</b>で、コードを埋め込んだリンクをコピー。</li>
+      <li><b>EN / 日本語</b> でいつでも言語を切り替え。</li>
+      <li>レッスン 7-3 から、<b>TouchDesigner</b> の GLSL TOP 用にコードをコピーできます。</li>
+    </ul>
+  </section>
+  <section class="help-sec">
+    <h3>コードについて</h3>
+    <ul>
+      <li>書き方は <b>Shadertoy</b> と同じです：<code>void mainImage(out vec4 fragColor, in vec2 fragCoord)</code></li>
+      <li>最初から使えるもの：<code>iTime</code>、<code>iResolution</code>、<code>iMouse</code>、<code>iFrame</code></li>
+      <li>WebGL2（GLSL ES 3.00）で動きます。最新の Chrome / Edge / Firefox / Safari に対応。</li>
+    </ul>
+  </section>
+  <section class="help-sec help-wide">
+    <h3>キーボードショートカット</h3>
+    <table class="help-keys">
+      <tr><td>${K(',')} / ${K('←')}</td><td>前のレッスン</td><td>${K(MOD + '+Enter')}</td><td>すぐに実行</td></tr>
+      <tr><td>${K('.')} / ${K('→')}</td><td>次のレッスン</td><td>${K(MOD + '+Z')} / ${K(MOD + '+Shift+Z')}</td><td>元に戻す / やり直す</td></tr>
+      <tr><td>${K('Space')}</td><td>一時停止 / 再生</td><td>${K(MOD + '+/')}</td><td>コメントにする / 戻す</td></tr>
+      <tr><td>${K('?')}</td><td>このヘルプを開く</td><td>${K('Tab')} / ${K('Shift+Tab')}</td><td>インデント / 戻す</td></tr>
+      <tr><td>${K('Esc')}</td><td>ウィンドウを閉じる</td><td>${K(MOD + '+S')}</td><td>保存（自動でも保存）</td></tr>
+    </table>
+    <p class="help-note">左側のショートカットは、エディタで入力していないときに使えます。先にプレビューかレッスンの説明をクリックしてください。</p>
+  </section>
+</div>`,
+};
+function renderHelp() { $('#helpBody').innerHTML = HELP[LANG](); }
+function openHelp() { if (!$('#toc').hidden) closeToc(); renderHelp(); $('#help').hidden = false; $('#help .icbtn').focus(); }
+function closeHelp() { $('#help').hidden = true; }
+$('#btnHelp').onclick = openHelp;
+$('#help').addEventListener('click', e => { if (e.target === $('#help') || e.target.closest('[data-close]')) closeHelp(); });
+
+/* =========================================================
    Language switch
    ========================================================= */
 function setLang(l) {
@@ -4112,6 +4297,7 @@ function setLang(l) {
   updateInfo(); compileGraph();
   if (!$('#toc').hidden) buildToc();
   if (!$('#intro').hidden) renderIntroTexts();
+  if (!$('#help').hidden) renderHelp();
 }
 document.addEventListener('click', e => { const b = e.target.closest('.lang-btn'); if (b) setLang(b.dataset.lang); });
 
@@ -4124,6 +4310,7 @@ document.addEventListener('click', e => { const b = e.target.closest('.lang-btn'
   if (!e.target.closest('input, textarea, select') && document.activeElement === ta) ta.blur();
 }));
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('#help').hidden) { closeHelp(); return; }
   if (e.key === 'Escape' && !$('#toc').hidden) { closeToc(); return; }
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'textarea' || tag === 'input' || tag === 'select') return;
@@ -4131,6 +4318,8 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Enter') { const b = $('#introActs [data-intro]'); b && b.click(); }
     return;
   }
+  if (e.key === '?' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); if ($('#help').hidden) openHelp(); else closeHelp(); return; }
+  if (!$('#help').hidden) return;
   if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); S.paused = !S.paused; updateToggles(); }
   // , / . and ← / → = previous / next lesson (only when not typing in the editor).
   // Use the physical key (e.code) so it also works with a Japanese IME on ("、" "。").
