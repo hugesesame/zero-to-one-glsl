@@ -26,6 +26,7 @@ ZERO to ONE は、シェーダーがわかるようになるいちばん大事�
 - **ピクセル検査**：プレビューにマウスを乗せると、そのピクセルの座標と色の値が見える
 - **グラフ**：`sin`・`step`・`smoothstep`・`fract` など、好きな式の形をその場で描く
 - **関数辞典**、座標グリッド、全画面プレビュー、PNG 保存
+- **キーボード操作**：`,` / `.` で前後のレッスンへ、`Space` で一時停止、`Cmd/Ctrl+Enter` で実行
 - 随所に「**Processing では / GLSL では**」の比較
 - **Shadertoy 互換**の書き方（`mainImage`・`iTime`・`iResolution`・`iMouse`）。TouchDesigner の GLSL TOP 用への書き出しにも対応
 - **English / 日本語** をいつでも切り替え

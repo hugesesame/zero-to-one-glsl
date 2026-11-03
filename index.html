@@ -152,6 +152,7 @@ pre.snip{margin:8px 0 14px;padding:10px 12px;border:1px solid var(--line2);borde
 .nextbtn{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:10px 14px;border:1px solid var(--line2);border-radius:10px;min-width:0;max-width:100%;text-align:right}
 .nextbtn:hover{border-color:var(--accent-line)}
 .nextbtn small{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.08em}
+.nextbtn small kbd{font-size:10px;padding:0 4px;letter-spacing:0}
 .nextbtn span{font-size:13px}
 .nextbtn.glow{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);animation:glow 1.6s ease-in-out infinite}
 @keyframes glow{50%{box-shadow:0 0 0 6px rgba(124,240,196,.04)}}
@@ -499,7 +500,7 @@ let LANG = (() => {
 })();
 const UI = {
   en: {
-    'toc.open': 'Open the table of contents', prev: 'Previous lesson', next: 'Next lesson',
+    'toc.open': 'Open the table of contents', prev: 'Previous lesson ( , )', next: 'Next lesson ( . )',
     'appFull.title': 'Make the whole workspace full screen', full: 'Full screen', fullExit: 'Exit full screen',
     run: 'Run', 'run.title': `Run now (${MOD} + Enter)`,
     reset: 'Starter code', 'reset.title': "Go back to this lesson's starter code (you can undo it)",
@@ -550,7 +551,7 @@ const UI = {
     graph: 'Graph', 'docs.search': 'Search by name, or by words like "distance" or "repeat"', 'docs.none': 'Nothing found',
   },
   ja: {
-    'toc.open': '目次を開く', prev: '前のレッスン', next: '次のレッスン',
+    'toc.open': '目次を開く', prev: '前のレッスン（ , キー）', next: '次のレッスン（ . キー）',
     'appFull.title': '作業画面全体を全画面に', full: '全画面', fullExit: '全画面を終了',
     run: '実行', 'run.title': `すぐに実行（${MOD} + Enter）`,
     reset: '最初のコード', 'reset.title': 'このレッスンの最初のコードに戻す（あとから元に戻せます）',
@@ -3656,8 +3657,8 @@ function renderLesson() {
     </section>
     ${L.tips && L.tips.length ? `<details class="tips" id="tips" ${done ? 'open' : ''}><summary>${T('tips', L.tips.length)}</summary><ul>${L.tips.map(x => `<li>${x}</li>`).join('')}</ul></details>` : ''}
     <div class="l-foot">
-      ${prev ? `<button class="nextbtn prevbtn" data-go="${i - 1}"><small>← PREV</small><span>${esc(prev.id)} ${esc(prev.title)}</span></button>` : '<span></span>'}
-      ${next ? `<button class="nextbtn ${done ? 'glow' : ''}" id="nextBtn" data-go="${i + 1}"><small>NEXT →</small><span>${esc(next.id)} ${esc(next.title)}</span></button>` : ''}
+      ${prev ? `<button class="nextbtn prevbtn" data-go="${i - 1}"><small>← PREV <kbd>,</kbd></small><span>${esc(prev.id)} ${esc(prev.title)}</span></button>` : '<span></span>'}
+      ${next ? `<button class="nextbtn ${done ? 'glow' : ''}" id="nextBtn" data-go="${i + 1}"><small><kbd>.</kbd> NEXT →</small><span>${esc(next.id)} ${esc(next.title)}</span></button>` : ''}
     </div>`;
   renderHints(); renderMeter();
 }
@@ -4126,6 +4127,12 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); S.paused = !S.paused; updateToggles(); }
+  // , / . = previous / next lesson (only when not typing in the editor)
+  if ((e.key === ',' || e.key === '.') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    e.preventDefault();
+    const to = S.idx + (e.key === ',' ? -1 : 1);
+    if (to >= 0 && to < total) { loadLesson(to); if (!$('#toc').hidden) closeToc(); }
+  }
 });
 const ro = new ResizeObserver(() => { drawGridOverlay(); if (!$('#tab-graph').hidden) drawGraphGrid(); });
 ro.observe(pvWrap); ro.observe($('#tab-graph'));
