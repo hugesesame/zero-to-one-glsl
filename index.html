@@ -4118,6 +4118,11 @@ document.addEventListener('click', e => { const b = e.target.closest('.lang-btn'
 /* =========================================================
    Global keys & resize
    ========================================================= */
+// Clicking the preview or the lesson text takes focus away from the editor,
+// so keyboard shortcuts (Space, , .) work right after.
+['#pvWrap', '#lessonArea', '.area-tabs .tabs'].forEach(sel => $(sel).addEventListener('mousedown', e => {
+  if (!e.target.closest('input, textarea, select') && document.activeElement === ta) ta.blur();
+}));
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('#toc').hidden) { closeToc(); return; }
   const tag = (e.target.tagName || '').toLowerCase();
@@ -4127,10 +4132,13 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); S.paused = !S.paused; updateToggles(); }
-  // , / . = previous / next lesson (only when not typing in the editor)
-  if ((e.key === ',' || e.key === '.') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+  // , / . = previous / next lesson (only when not typing in the editor).
+  // Use the physical key (e.code) so it also works with a Japanese IME on ("、" "。").
+  const nav = e.code === 'Comma' || ['，', '、', ','].includes(e.key) ? -1
+            : e.code === 'Period' || ['．', '。', '.'].includes(e.key) ? 1 : 0;
+  if (nav && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
     e.preventDefault();
-    const to = S.idx + (e.key === ',' ? -1 : 1);
+    const to = S.idx + nav;
     if (to >= 0 && to < total) { loadLesson(to); if (!$('#toc').hidden) closeToc(); }
   }
 });
