@@ -26,7 +26,7 @@ The name comes from how shaders think: colors, positions, almost everything live
 - **Pixel inspector** — hover the preview to see a pixel's coordinates and color values
 - **Graph tool** — see the shape of `sin`, `step`, `smoothstep`, `fract` and any expression you type
 - **Function reference**, coordinate grid, full-screen preview, PNG export
-- **Keyboard friendly** — `,` / `.` for the previous / next lesson, `Space` to pause, `Cmd/Ctrl+Enter` to run
+- **Keyboard friendly** — `,` / `.` or `←` / `→` for the previous / next lesson, `Space` to pause, `Cmd/Ctrl+Enter` to run
 - **"In Processing / In GLSL"** comparisons throughout
 - **Shadertoy-compatible** code (`mainImage`, `iTime`, `iResolution`, `iMouse`), plus a one-click export for TouchDesigner's GLSL TOP
 - **English / 日本語** — switch any time

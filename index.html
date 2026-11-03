@@ -500,7 +500,7 @@ let LANG = (() => {
 })();
 const UI = {
   en: {
-    'toc.open': 'Open the table of contents', prev: 'Previous lesson ( , )', next: 'Next lesson ( . )',
+    'toc.open': 'Open the table of contents', prev: 'Previous lesson ( , or ← )', next: 'Next lesson ( . or → )',
     'appFull.title': 'Make the whole workspace full screen', full: 'Full screen', fullExit: 'Exit full screen',
     run: 'Run', 'run.title': `Run now (${MOD} + Enter)`,
     reset: 'Starter code', 'reset.title': "Go back to this lesson's starter code (you can undo it)",
@@ -551,7 +551,7 @@ const UI = {
     graph: 'Graph', 'docs.search': 'Search by name, or by words like "distance" or "repeat"', 'docs.none': 'Nothing found',
   },
   ja: {
-    'toc.open': '目次を開く', prev: '前のレッスン（ , キー）', next: '次のレッスン（ . キー）',
+    'toc.open': '目次を開く', prev: '前のレッスン（ , または ← キー）', next: '次のレッスン（ . または → キー）',
     'appFull.title': '作業画面全体を全画面に', full: '全画面', fullExit: '全画面を終了',
     run: '実行', 'run.title': `すぐに実行（${MOD} + Enter）`,
     reset: '最初のコード', 'reset.title': 'このレッスンの最初のコードに戻す（あとから元に戻せます）',
@@ -4132,10 +4132,10 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); S.paused = !S.paused; updateToggles(); }
-  // , / . = previous / next lesson (only when not typing in the editor).
+  // , / . and ← / → = previous / next lesson (only when not typing in the editor).
   // Use the physical key (e.code) so it also works with a Japanese IME on ("、" "。").
-  const nav = e.code === 'Comma' || ['，', '、', ','].includes(e.key) ? -1
-            : e.code === 'Period' || ['．', '。', '.'].includes(e.key) ? 1 : 0;
+  const nav = e.code === 'Comma' || e.key === 'ArrowLeft' || ['，', '、', ','].includes(e.key) ? -1
+            : e.code === 'Period' || e.key === 'ArrowRight' || ['．', '。', '.'].includes(e.key) ? 1 : 0;
   if (nav && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
     e.preventDefault();
     const to = S.idx + nav;
