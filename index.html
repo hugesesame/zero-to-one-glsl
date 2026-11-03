@@ -2942,12 +2942,28 @@ const DOCS = {
 };
 
 /* English versions of the gallery examples and the function reference */
-const EXAMPLES_EN = {
-  plasma: trCode(EXAMPLES.plasma, [['// プラズマ：いくつもの sin を足し合わせる', '// Plasma: add several sin waves together']]),
-  kaleido: trCode(EXAMPLES.kaleido, [['// 万華鏡：角度を折りたたんで、繰り返す', '// Kaleidoscope: fold the angle, then repeat'], ['// 角度を 6 等分して折りたたむ', '// Split the angle into 6 slices and fold them']]),
-  tunnel: trCode(EXAMPLES.tunnel, [['// トンネル：角度と「奥行き」でチェッカー模様', '// Tunnel: a checkerboard made of angle and "depth"'], ['// 角度 → -0.5〜0.5', '// angle → -0.5 to 0.5'], ['// 中心ほど遠い', '// the center is the farthest away'], ['// 遠くは暗く', '// darker in the distance']]),
-  aurora: trCode(EXAMPLES.aurora, [['// オーロラ：fBm でゆらぐ光のカーテン', '// Aurora: a curtain of light swaying with fBm'], ['// 星', '// stars']]),
+const EXAMPLE_TR = {
+  plasma: [['// プラズマ：いくつもの sin を足し合わせる', '// Plasma: add several sin waves together']],
+  kaleido: [['// 万華鏡：角度を折りたたんで、繰り返す', '// Kaleidoscope: fold the angle, then repeat'], ['// 角度を 6 等分して折りたたむ', '// Split the angle into 6 slices and fold them']],
+  tunnel: [['// トンネル：角度と「奥行き」でチェッカー模様', '// Tunnel: a checkerboard made of angle and "depth"'], ['// 角度 → -0.5〜0.5', '// angle → -0.5 to 0.5'], ['// 中心ほど遠い', '// the center is the farthest away'], ['// 遠くは暗く', '// darker in the distance']],
+  aurora: [['// オーロラ：fBm でゆらぐ光のカーテン', '// Aurora: a curtain of light swaying with fBm'], ['// 星', '// stars']],
 };
+const EXAMPLES_EN = Object.fromEntries(Object.keys(EXAMPLES).map(k => [k, trCode(EXAMPLES[k], EXAMPLE_TR[k])]));
+// Translate the lesson's own comments (and example comments) inside any code, in the current language.
+// Comments the learner wrote themselves are left as they are.
+function localizeCode(L, code) {
+  const pairs = [...((LESSONS_EN[L.id] || {}).codeTr || []), ...Object.values(EXAMPLE_TR).flat()]
+    .map(([ja, en]) => LANG === 'ja' ? [en, ja] : [ja, en])
+    .sort((a, b) => b[0].length - a[0].length);
+  // only replace whole comments (followed by end of line), so similar text is not touched
+  return code.split('\n').map(line => {
+    for (const [from, to] of pairs) {
+      const i = line.indexOf(from);
+      if (i >= 0 && line.slice(i + from.length).trim() === '') return line.slice(0, i) + to;
+    }
+    return line;
+  }).join('\n');
+}
 const DOC_GROUPS_EN = { '入力と出力': 'Inputs & outputs', '型': 'Types', '形をつくる': 'Making shapes', '繰り返し': 'Repetition', '波と角度': 'Waves & angles', '数学': 'Math', 'ベクトル': 'Vectors', '書き方': 'Syntax' };
 const DOCS_EN = {
   mainImage: 'The main function, run once for every pixel. It receives fragCoord (the position) and decides fragColor (the color).',
@@ -3670,7 +3686,7 @@ function loadLesson(idx, opts = {}) {
   const L = LESSONS[idx]; S.idx = idx; S.lesson = L; S.hintsShown = 0; S.match = null; S.content = null;
   store.data.last = L.id; store.save();
   const saved = store.data.codes[L.id];
-  setCode(opts.code != null ? opts.code : (saved != null && !isStarter(L, saved) ? saved : starterOf(L)));
+  setCode(localizeCode(L, opts.code != null ? opts.code : (saved != null && !isStarter(L, saved) ? saved : starterOf(L))));
   if (opts.code != null) saveCode();
   S.time = 0; S.frame = 0; S.grid = !!L.grid; S.pip = true;
   if (E) { E.del(S.target); S.target = null; E.del(S.user); S.user = null; S.userOk = false;
@@ -4082,6 +4098,13 @@ function setLang(l) {
   $('#docsSearch').placeholder = T('docs.search'); buildDocs($('#docsSearch').value);
   if (L) {
     if (wasStarter) { setCode(starterOf(L)); compileUser(); renderConsole(true); }
+    else if (localizeCode(L, ta.value) !== ta.value) {
+      // the learner's code: keep their changes, translate only the lesson's comments (undoable)
+      const s0 = ta.selectionStart, sl = ta.scrollLeft, st = ta.scrollTop;
+      histRecord(true); ta.value = localizeCode(L, ta.value);
+      ta.setSelectionRange(Math.min(s0, ta.value.length), Math.min(s0, ta.value.length)); ta.scrollLeft = sl; ta.scrollTop = st;
+      codeChanged({ force: true, immediate: true });
+    }
     else renderConsole(true);
     updateCrumb(); renderLesson();
   }
