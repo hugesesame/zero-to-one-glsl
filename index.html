@@ -139,6 +139,26 @@ pre.snip{margin:8px 0 14px;padding:10px 12px;border:1px solid var(--line2);borde
 .hints{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .hint{font-size:13px;line-height:1.75;padding:8px 12px;border-radius:8px;background:#141720;border:1px solid var(--line2);color:var(--text2);animation:fadeIn .25s}
 .hint .hn{font-family:var(--mono);font-size:10.5px;color:var(--warn);letter-spacing:.08em;margin-right:6px}
+.ans-ask{margin-top:10px;font-size:13px;line-height:1.75;padding:10px 12px;border-radius:8px;background:#141720;border:1px solid var(--line2);color:var(--text2);animation:fadeIn .25s}
+.ans-ask b{color:var(--text);font-weight:600}
+.ans-ask .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ans-diff{margin-top:10px;border:1px solid var(--line2);border-radius:8px;background:var(--ed);overflow:hidden}
+.ans-diff-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 10px;padding:6px 10px;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+.ans-diff-h .lg{display:flex;gap:10px;font-family:var(--mono);font-size:11px}
+.ans-diff-h .m-del{color:var(--err)} .ans-diff-h .m-add{color:var(--accent)}
+.ans-diff .code{overflow-y:auto;max-height:340px;padding:6px 0}
+.hint code{white-space:pre-wrap;overflow-wrap:anywhere;-webkit-box-decoration-break:clone;box-decoration-break:clone;line-height:1.9}
+.dl .tx{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.dl{display:flex;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--muted);padding-right:12px}
+.dl .ln{width:2.6em;flex:none;text-align:right;padding-right:4px;color:var(--faint);user-select:none}
+.dl .sg{width:1.6em;flex:none;text-align:center;user-select:none}
+.dl.del{background:rgba(255,107,107,.08);color:var(--text)} .dl.del .sg{color:var(--err)}
+.dl.add{background:var(--accent-dim);color:var(--text)} .dl.add .sg{color:var(--accent)}
+.dl.del mark{background:rgba(255,107,107,.3);color:inherit;border-radius:2px}
+.dl.add mark{background:rgba(124,240,196,.28);color:inherit;border-radius:2px}
+.dl.fold{color:var(--faint);font-family:var(--sans);font-size:11px;padding-left:4.2em}
+.diff-same{padding:8px 12px;font-size:12.5px;color:var(--accent)}
+.ans-diff-n{padding:6px 10px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.6}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 .tips{margin-top:6px;border-top:1px solid var(--line);padding-top:12px}
 .tips summary{cursor:pointer;font-size:12.5px;color:var(--muted);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
@@ -172,6 +192,7 @@ pre.snip{margin:8px 0 14px;padding:10px 12px;border:1px solid var(--line2);borde
 /* ===== Editor ===== */
 .bar{height:38px;display:flex;align-items:center;gap:6px;padding:0 10px 0 14px;border-bottom:1px solid var(--line);flex-shrink:0;min-width:0}
 .ed-file{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.ed-file{min-width:0;overflow:hidden} #edFile{overflow:hidden;text-overflow:ellipsis}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);transition:background .2s,box-shadow .2s}
 .dot.ok{background:var(--accent);box-shadow:0 0 8px rgba(124,240,196,.55)}
 .dot.err{background:var(--err);box-shadow:0 0 8px rgba(255,107,107,.55)}
@@ -566,6 +587,11 @@ const UI = {
     'task.match': 'TASK — recreate the target', 'task.free': 'TASK — try it freely',
     done: 'I did it!', doneAlready: 'Completed ✓',
     'hint.more': (i, n) => `Show a hint (${i}/${n})`, 'hint.answer': 'Show the answer', 'hint.apply': 'Put the answer code into the editor',
+    'ans.ask': '<b>Want to try a little longer?</b> A hint might be all you need. Of course, reading the answer and asking “why does this work?” is a great way to learn, too.',
+    'ans.think': 'Keep trying', 'ans.show': 'Show the answer',
+    'diff.title': 'Your code vs. the answer', 'diff.you': 'your code', 'diff.ans': 'answer',
+    'diff.same': 'Your code is the same as the answer.', 'diff.fold': n => `${n} matching line${n > 1 ? 's' : ''}`,
+    'diff.note': 'Line numbers are the ones in your editor. Written differently but the picture matches? That is correct too.',
     tips: n => `Going further — ideas to try (${n})`,
     'toast.applied': `Inserted the answer code (${MOD}+Z to undo)`,
     'toast.example': `Loaded the example (${MOD}+Z to undo)`,
@@ -618,6 +644,11 @@ const UI = {
     'task.match': '課題 — お手本を再現しよう', 'task.free': '課題 — 自由に試そう',
     done: 'できた！', doneAlready: '完了済み ✓',
     'hint.more': (i, n) => `ヒントを見る（${i}/${n}）`, 'hint.answer': '答えを見る', 'hint.apply': 'お手本のコードをエディタに入れる',
+    'ans.ask': '<b>もう少しだけ考えてみる？</b> ヒントで解けることも多いです。もちろん、答えを見て「なぜこうなるのか」を考えるのも立派な学び方です。',
+    'ans.think': 'もう少し考える', 'ans.show': '答えを見る',
+    'diff.title': 'あなたのコードとお手本の違い', 'diff.you': 'あなたのコード', 'diff.ans': 'お手本',
+    'diff.same': 'お手本と同じコードです。', 'diff.fold': n => `同じ行 ${n} 行`,
+    'diff.note': '行番号はエディタの行番号です。書き方が違っても、映像が一致すれば正解です。',
     tips: n => `もっと先へ — 応用のヒント（${n}）`,
     'toast.applied': `お手本のコードを入れました（${MOD}+Z で元に戻せます）`,
     'toast.example': `作例を読み込みました（${MOD}+Z で元に戻せます）`,
@@ -3232,7 +3263,7 @@ const S = {
   mouse: [0, 0, 0, 0], mouseSet: false,
   grid: false, inspect: false, pip: true,
   hover: null, capture: false,
-  match: null, hintsShown: 0,
+  match: null, hintsShown: 0, ansAsk: false, ansOpen: false,
 };
 
 /* =========================================================
@@ -3388,6 +3419,7 @@ function codeChanged(opts = {}) {
   refreshEditor(); updateInfo();
   clearTimeout(saveTimer); saveTimer = setTimeout(saveCode, 400);
   requestCompile(opts.immediate ? 0 : 380);
+  scheduleDiff();
 }
 function saveCode() {
   if (!S.lesson) return;
@@ -3684,8 +3716,10 @@ function renderLesson() {
       ${L.check === 'match' ? `<div class="meter" id="meter"><span>${T('meter.label')}</span><div class="bar"><i></i></div><span class="pct">—</span></div><div class="meter-note" id="meterNote"></div>` : ''}
       <div class="task-actions">
         ${hasHints ? `<button class="btn" id="hintBtn"></button>` : ''}
+        ${L.answer ? `<button class="btn ghost" id="answerBtn">${T('hint.answer')}</button>` : ''}
         ${L.check === 'free' ? `<button class="btn primary" id="doneBtn" ${done ? 'disabled' : ''}>${done ? T('doneAlready') : T('done')}</button>` : ''}
       </div>
+      <div class="ans-ask" id="ansAsk" hidden><div>${T('ans.ask')}</div><div class="row"><button class="btn" id="ansThink">${T('ans.think')}</button><button class="btn" id="ansYes">${T('ans.show')}</button></div></div>
       <div class="hints" id="hints"></div>
     </section>
     ${L.tips && L.tips.length ? `<details class="tips" id="tips" ${done ? 'open' : ''}><summary>${T('tips', L.tips.length)}</summary><ul>${L.tips.map(x => `<li>${x}</li>`).join('')}</ul></details>` : ''}
@@ -3696,17 +3730,97 @@ function renderLesson() {
   renderHints(); renderMeter();
 }
 function renderHints() {
-  const L = LX(S.lesson); const btn = $('#hintBtn'); if (!btn) return;
-  const n = L.hints.length, shown = S.hintsShown;
-  $('#hints').innerHTML = L.hints.slice(0, shown).map((h, k) =>
-    `<div class="hint"><span class="hn">${k === n - 1 ? 'ANSWER' : 'HINT ' + (k + 1)}</span>${h}${k === n - 1 && L.answer ? `<div style="margin-top:8px"><button class="btn" id="applyAnswer">${T('hint.apply')}</button></div>` : ''}</div>`).join('');
-  if (shown >= n) btn.hidden = true;
-  else { btn.hidden = false; btn.textContent = shown === n - 1 ? T('hint.answer') : T('hint.more', shown + 1, n - 1); }
+  const L = LX(S.lesson), hints = L.hints || [], n = hints.length, shown = S.hintsShown;
+  const ansOpen = !!L.answer && (n ? shown >= n : S.ansOpen);
+  const extra = L.answer ? `<div class="ans-diff" id="ansDiff">${diffHTML()}</div><div style="margin-top:8px"><button class="btn" id="applyAnswer">${T('hint.apply')}</button></div>` : '';
+  $('#hints').innerHTML = hints.slice(0, shown).map((h, k) =>
+    `<div class="hint"><span class="hn">${k === n - 1 ? 'ANSWER' : 'HINT ' + (k + 1)}</span>${h}${k === n - 1 ? extra : ''}</div>`).join('')
+    + (!n && ansOpen ? `<div class="hint"><span class="hn">ANSWER</span>${extra}</div>` : '');
+  const btn = $('#hintBtn');
+  if (btn) {
+    if (shown >= n) btn.hidden = true;
+    else { btn.hidden = false; btn.textContent = shown === n - 1 ? T('hint.answer') : T('hint.more', shown + 1, n - 1); }
+  }
+  // "Show the answer" is always there, so nobody has to click through every hint first
+  const ab = $('#answerBtn'); if (ab) ab.hidden = ansOpen || S.ansAsk || (n > 0 && shown === n - 1);
+  const ask = $('#ansAsk'); if (ask) ask.hidden = !S.ansAsk || ansOpen;
+}
+/* ---------- Answer diff: your code vs. the answer ---------- */
+// compare lines without comments and extra spaces, so only real code differences show up
+const normLine = l => l.replace(/\/\/.*$/, '').replace(/\s+/g, ' ').trim();
+function lineDiff(a, b) {
+  const na = a.map(normLine), nb = b.map(normLine), n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = na[i] === nb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const raw = []; let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (na[i] === nb[j]) raw.push({ t: 'same', i: i++, j: j++ });
+    else if (dp[i + 1][j] >= dp[i][j + 1]) raw.push({ t: 'del', i: i++ });
+    else raw.push({ t: 'add', j: j++ });
+  }
+  while (i < n) raw.push({ t: 'del', i: i++ });
+  while (j < m) raw.push({ t: 'add', j: j++ });
+  // inside each changed block: your lines first, then the answer's, paired up to mark the changed part.
+  // blank / comment-only lines are not real differences: they are shown as plain lines (or left out)
+  const out = [];
+  for (let k = 0; k < raw.length;) {
+    if (raw[k].t === 'same') { out.push(raw[k++]); continue; }
+    const mine = [], add = [];
+    while (k < raw.length && raw[k].t !== 'same') { const o = raw[k++]; if (o.t === 'del') mine.push(o); else if (nb[o.j] !== '') add.push(o); }
+    mine.forEach(o => { if (na[o.i] === '') o.t = 'same'; });
+    const del = mine.filter(o => o.t === 'del');
+    let last = mine.length; while (last > 0 && mine[last - 1].t === 'same') last--;
+    for (let p = 0; p < Math.min(del.length, add.length); p++) { del[p].pair = b[add[p].j]; add[p].pair = a[del[p].i]; }
+    out.push(...mine.slice(0, last), ...add, ...mine.slice(last));
+  }
+  return out;
+}
+function markChange(s, other) {
+  if (other == null) return esc(s);
+  const lead = s.length - s.trimStart().length; let p = lead;
+  const o = other.trimStart();
+  while (p < s.length && p - lead < o.length && s[p] === o[p - lead]) p++;
+  let q = 0;
+  while (q < s.length - p && q < o.length - (p - lead) && s[s.length - 1 - q] === o[o.length - 1 - q]) q++;
+  const e = s.length - q;
+  return esc(s.slice(0, p)) + (e > p ? `<mark>${esc(s.slice(p, e))}</mark>` : '') + esc(s.slice(e));
+}
+function diffHTML() {
+  const L = S.lesson; if (!L || !L.answer) return '';
+  const a = ta.value.replace(/\s+$/, '').split('\n'), b = localizeCode(L, L.answer).replace(/\s+$/, '').split('\n');
+  const ops = lineDiff(a, b);
+  const head = `<div class="ans-diff-h"><span>${T('diff.title')}</span><span class="lg"><span><b class="m-del">−</b> ${T('diff.you')}</span><span><b class="m-add">+</b> ${T('diff.ans')}</span></span></div>`;
+  if (!ops.some(o => o.t !== 'same')) return head + `<div class="diff-same">✓ ${T('diff.same')}</div>`;
+  const CTX = 2, keep = ops.map(() => false);
+  ops.forEach((o, k) => { if (o.t !== 'same') for (let d = -CTX; d <= CTX; d++) if (ops[k + d]) keep[k + d] = true; });
+  let html = '';
+  for (let k = 0; k < ops.length;) {
+    const o = ops[k];
+    if (!keep[k]) { let c = 0; while (k < ops.length && !keep[k]) { c++; k++; } html += `<div class="dl fold">⋯ ${T('diff.fold', c)}</div>`; continue; }
+    if (o.t === 'same') html += `<div class="dl"><span class="ln">${o.i + 1}</span><span class="sg"></span><span class="tx">${esc(a[o.i]) || ' '}</span></div>`;
+    else if (o.t === 'del') html += `<div class="dl del"><span class="ln">${o.i + 1}</span><span class="sg">−</span><span class="tx">${markChange(a[o.i], o.pair) || ' '}</span></div>`;
+    else html += `<div class="dl add"><span class="ln"></span><span class="sg">+</span><span class="tx">${markChange(b[o.j], o.pair) || ' '}</span></div>`;
+    k++;
+  }
+  return head + `<div class="code">${html}</div><div class="ans-diff-n">${T('diff.note')}</div>`;
+}
+let diffTimer = 0;
+function scheduleDiff() {
+  if (!$('#ansDiff')) return;
+  clearTimeout(diffTimer); diffTimer = setTimeout(() => { const d = $('#ansDiff'); if (d) d.innerHTML = diffHTML(); }, 250);
 }
 $('#lesson').addEventListener('click', e => {
   const t = e.target;
   if (t.closest('#hintBtn')) { S.hintsShown++; renderHints(); return; }
-  if (t.closest('#applyAnswer')) { replaceAll(S.lesson.answer); toast(T('toast.applied')); return; }
+  if (t.closest('#answerBtn')) { S.ansAsk = true; renderHints(); return; }
+  if (t.closest('#ansThink')) { S.ansAsk = false; renderHints(); ta.focus(); return; }
+  if (t.closest('#ansYes')) {
+    S.ansAsk = false; S.ansOpen = true; S.hintsShown = (S.lesson.hints || []).length; renderHints();
+    const d = $('#ansDiff'); if (d) d.closest('.hint').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
+  if (t.closest('#applyAnswer')) { replaceAll(localizeCode(S.lesson, S.lesson.answer)); toast(T('toast.applied')); return; }
   if (t.closest('#doneBtn')) { markDone(S.lesson, false); return; }
   const go = t.closest('[data-go]'); if (go) { loadLesson(+go.dataset.go); return; }
   const g = t.closest('.gbtn[data-expr]'); if (g) { openGraph(g.dataset.expr, g.dataset.range); return; }
@@ -3717,7 +3831,7 @@ $('#lesson').addEventListener('click', e => {
 function loadLesson(idx, opts = {}) {
   idx = clamp(idx, 0, total - 1);
   if (S.lesson) saveCode();
-  const L = LESSONS[idx]; S.idx = idx; S.lesson = L; S.hintsShown = 0; S.match = null; S.content = null;
+  const L = LESSONS[idx]; S.idx = idx; S.lesson = L; S.hintsShown = 0; S.ansAsk = false; S.ansOpen = false; S.match = null; S.content = null;
   store.data.last = L.id; store.save();
   const saved = store.data.codes[L.id];
   setCode(localizeCode(L, opts.code != null ? opts.code : (saved != null && !isStarter(L, saved) ? saved : starterOf(L))));
@@ -4134,7 +4248,7 @@ const HELP = {
       <li><b>Read</b> the lesson on the left.</li>
       <li><b>Edit</b> the code in the middle. It runs automatically when you stop typing.</li>
       <li><b>Do the task.</b> In "recreate the target" tasks, your image is compared with the <b>Target</b> (bottom right of the preview). Reach a <b>100% match</b> to clear. In free tasks, press <b>"I did it!"</b>.</li>
-      <li><b>Stuck?</b> "Show a hint" opens hints one by one. The last one is the answer, and you can put it straight into the editor.</li>
+      <li><b>Stuck?</b> "Show a hint" opens hints one by one. "Show the answer" works any time. The answer shows how your code differs from it, line by line, and you can put it straight into the editor.</li>
       <li><b>Going further</b> has ideas for remixing what you just learned.</li>
     </ol>
     <p class="help-note">No lesson is locked — you can move on any time.</p>
@@ -4206,7 +4320,7 @@ const HELP = {
       <li>左のレッスンを<b>読む</b>。</li>
       <li>中央のコードを<b>書き換える</b>。入力が止まると自動で実行されます。</li>
       <li><b>課題に挑戦。</b>「お手本を再現しよう」の課題では、あなたの映像とプレビュー右下の<b>お手本</b>を自動で比べます。<b>一致度 100%</b> でクリア。「自由に試そう」の課題は<b>「できた！」</b>を押します。</li>
-      <li><b>困ったら</b>「ヒントを見る」で1つずつヒントが開きます。最後は答えで、そのままエディタに入れることもできます。</li>
+      <li><b>困ったら</b>「ヒントを見る」で1つずつヒントが開きます。「答えを見る」はいつでも押せます。答えには、あなたのコードとの違いが行ごとに表示され、そのままエディタに入れることもできます。</li>
       <li><b>「もっと先へ」</b>には、学んだことを応用するアイデアがあります。</li>
     </ol>
     <p class="help-note">ロックされたレッスンはありません。いつでも先へ進めます。</p>

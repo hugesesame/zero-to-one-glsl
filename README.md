@@ -22,7 +22,7 @@ The name comes from how shaders think: colors, positions, almost everything live
 - **Drag any number** in the code to change it, like Processing's Tweak mode
 - **Auto-checked tasks** — your output is compared with a target image and shown as a match %
 - **Errors explained in plain words** — the cause and how to fix it, with "did you mean…?" suggestions
-- **Step-by-step hints**, ending with the answer
+- **Step-by-step hints**, and the answer whenever you need it — with your code and the answer compared line by line
 - **Pixel inspector** — hover the preview to see a pixel's coordinates and color values
 - **Graph tool** — see the shape of `sin`, `step`, `smoothstep`, `fract` and any expression you type
 - **Function reference**, coordinate grid, full-screen preview, PNG export
