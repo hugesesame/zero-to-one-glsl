@@ -310,10 +310,14 @@ body.scrubbing,body.scrubbing *{cursor:ew-resize!important;user-select:none!impo
 .intro canvas{position:absolute;inset:0;width:100%;height:100%}
 .intro.hide{opacity:0;pointer-events:none}
 .intro-inner{position:relative;text-align:center;padding:24px;max-width:760px}
-.intro h1{font-family:var(--mono);font-size:clamp(38px,8vw,92px);letter-spacing:.12em;margin:0;font-weight:700;line-height:1.05;white-space:nowrap}
-.intro h1 i{font-style:normal;font-weight:300;font-size:.36em;color:var(--muted);letter-spacing:.04em;margin:0 .45em 0 .2em;vertical-align:.35em}
-.intro h1 b{color:var(--accent);text-shadow:0 0 40px rgba(124,240,196,.35)}
-.intro .sub{font-family:var(--mono);color:var(--text2);letter-spacing:.32em;margin-top:16px;font-size:14px}
+.intro{--helv:"Helvetica Neue",Helvetica,Arial,"Nimbus Sans","Liberation Sans",sans-serif}
+.intro h1{font-family:var(--helv);font-size:clamp(46px,9.5vw,116px);letter-spacing:-.015em;margin:0;font-weight:700;line-height:1;white-space:nowrap;color:#6b7180}
+.intro h1 i{font-style:normal;font-weight:700;font-size:.8em;color:inherit;letter-spacing:0;margin:0 .2em}
+.intro h1 b{font-weight:700;color:#f4f5f7;text-shadow:0 0 36px rgba(255,255,255,.35)}
+/* Monotone: ZERO = dark (0.0), ONE = bright (1.0). The mint accent stays in the background pixels. */
+.intro .btn.primary{background:#f4f5f7;border-color:#f4f5f7;color:#0a0b0e}
+.intro .btn.primary:hover{background:#fff;filter:none}
+.intro .sub{font-family:var(--helv);font-weight:700;color:var(--text);letter-spacing:0;margin-top:.55em;font-size:clamp(20px,2.9vw,34px);white-space:nowrap}
 .intro .lead{margin-top:36px;color:var(--text2);font-size:15px;line-height:2}
 .intro .lead b{color:var(--text)}
 .intro .acts{margin-top:30px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -449,7 +453,7 @@ body.scrubbing,body.scrubbing *{cursor:ew-resize!important;user-select:none!impo
   <div class="lang intro-lang" role="group" aria-label="Language"><button class="lang-btn" data-lang="en">EN</button><button class="lang-btn" data-lang="ja">日本語</button></div>
   <div class="intro-inner">
     <h1>ZERO<i>to</i><b>ONE</b></h1>
-    <div class="sub">— Pixel Mind —</div>
+    <div class="sub">- Pixel Mind -</div>
     <p class="lead" data-i18n-html="intro.lead"></p>
     <div class="acts" id="introActs"></div>
     <div class="meta" id="introMeta"></div>
