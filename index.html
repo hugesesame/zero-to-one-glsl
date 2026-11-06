@@ -115,6 +115,21 @@ pre.snip{margin:8px 0 14px;padding:10px 12px;border:1px solid var(--line2);borde
 .cmp-g{border-color:var(--accent-line)}
 .cmp-g .cmp-h{color:var(--accent)}
 .cmp code{font-size:11.5px!important;white-space:normal!important}
+.guess{margin:14px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.guess-h{font-size:10.5px;font-family:var(--mono);letter-spacing:.08em;color:var(--accent);padding:10px 0 2px}
+.guess ol{list-style:none;margin:0;padding:0;counter-reset:gq}
+.guess li{counter-increment:gq;display:grid;grid-template-columns:22px minmax(0,1fr);padding:8px 0;margin:0;border-top:1px dashed var(--line);font-size:13px;line-height:1.7}
+.guess li:first-child{border-top:0}
+.guess li::before{content:counter(gq);grid-column:1;font:11px/1.7 var(--mono);color:var(--faint);padding-top:1px}
+.guess-q,.guess details{grid-column:2}
+.guess summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;list-style:none;font-size:12px;color:var(--muted);user-select:none;border-radius:3px}
+.guess summary::-webkit-details-marker{display:none}
+.guess summary::before{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .2s}
+.guess details[open] summary::before{transform:rotate(45deg)}
+.guess summary:hover{color:var(--text2)}
+.guess summary:focus-visible{outline:1px solid var(--accent-line);outline-offset:2px}
+.guess details[open] summary{color:var(--accent)}
+.guess-a{color:var(--text2);padding:2px 0 0}
 .note{border-left:2px solid var(--warn);padding:7px 12px;margin:12px 0;background:rgba(255,196,107,.06);font-size:13px;border-radius:0 6px 6px 0;color:var(--text2)}
 .gbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:999px;padding:3px 12px 3px 10px;margin:2px 0 12px;font-size:12px;color:var(--text2);background:var(--panel);max-width:100%;text-align:left}
 .gbtn:hover{border-color:var(--accent-line);color:var(--text)}
@@ -707,6 +722,9 @@ const snip = code => `<pre class="snip">${highlight(code.replace(/^\n/, '').repl
 const GICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 14.5h13M1.5 1.5v13"/><path d="M3 12c2.5 0 3-8 5.5-8S11 9 14 9"/></svg>';
 const gbtn = (expr, range = '0..1') => `<button class="gbtn" data-expr="${esc(expr)}" data-range="${range}">${GICON}グラフで見る <code>${esc(expr)}</code></button>`;
 const note = h => `<div class="note">${h}</div>`;
+const guessBlock = (head, ans) => items => `<div class="guess"><div class="guess-h">${head}</div><ol>${items.map(([q, a]) => `<li><span class="guess-q">${q}</span><details><summary>${ans}</summary><div class="guess-a">${a}</div></details></li>`).join('')}</ol></div>`;
+const guess = guessBlock('予想してから、ピクセル検査で確かめよう', '答え');
+const guessE = guessBlock('GUESS FIRST, THEN CHECK WITH THE PIXEL INSPECTOR', 'Answer');
 // English versions of the helpers
 const cmpE = (p, g) => `<div class="compare"><div class="cmp cmp-p"><div class="cmp-h">IN PROCESSING</div>${p}</div><div class="cmp cmp-g"><div class="cmp-h">IN GLSL</div>${g}</div></div>`;
 const gbtnE = (expr, range = '0..1') => `<button class="gbtn" data-expr="${esc(expr)}" data-range="${range}">${GICON}See graph <code>${esc(expr)}</code></button>`;
@@ -1137,13 +1155,20 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   id: '3-3', ch: 3, title: '円を描く — length', coord: 'uv', check: 'match', grid: true,
   goal: '「距離」で円を描けるようになる',
   body: `
-<p>円とは「<b>中心からの距離が、半径より小さい点の集まり</b>」です。</p>
-${cmp('<code>ellipse(x, y, w, h);</code><br>円という図形を置く。', '各ピクセルが<b>中心からの距離を測り</b>、<br>自分が円の中か外かを判断する。')}
-<p>距離は <code>length()</code> で測れます。</p>
+<p>円とは「<b>中心からの距離が、半径より小さい点の集まり</b>」です。距離を測る関数は、Processing にもありましたね。</p>
+${cmp('<code>float d = dist(x, y, cx, cy);</code><br>2つの点のあいだの距離を測る。', '<code>float d = length(uv - c);</code><br><b>同じ意味</b>です。uv から中心 c を引いて、その長さを測ります。')}
+<p>Processing では <code>ellipse()</code> で円を「置き」ますが、シェーダーでは<b>各ピクセルが中心からの距離を測って</b>、自分が円の中か外かを判断します。</p>
 ${snip('float d = length(uv - vec2(0.5));   // 中心 (0.5, 0.5) からの距離')}
-<p>まずは距離 <code>d</code> そのものを色にしてみると、中心が黒く、外へ行くほど白くなるのが分かります。ピクセル検査で数値も確かめてみましょう。</p>
-<p>あとは step で「d が 0.3 より小さいか」を判断すれば、円になります。</p>`,
-  task: '距離 <code>d</code> が <b>0.3 より小さいところだけ白</b>くして、円を描いてください（step を使います）。',
+<p>最初のコードは、距離 <code>d</code> をそのまま色にしています。中心が黒く、外へ行くほど白くなります。</p>
+${guess([
+  ['真ん中 <code>(0.5, 0.5)</code> のピクセルの d は？', '<b>0.0</b>。中心そのものなので、距離はゼロ。だから真っ黒です。'],
+  ['左はしの真ん中 <code>(0.0, 0.5)</code> あたりは？', '<b>0.5</b>。中心から横に 0.5 離れています。色は半分の明るさの灰色です。'],
+  ['右上の角 <code>(1.0, 1.0)</code> あたりは？', '<b>約 0.71</b>。ななめは縦や横より遠いので、0.5 より大きくなります。'],
+  ['では、<b>d が 0.3 より小さい</b>ピクセルは、画面のどこに集まっている？', '中心のまわりの<b>丸い範囲</b>です。これが円になります。'],
+])}
+<p>あとは 3-1 の step で切るだけです。<code>step(0.3, d)</code> は「d が 0.3 以上」、つまり<b>円の外</b>が白になります。中を白くしたいので、3-1 の tips に出てきた <code>1.0 -</code> で白黒を反転します。</p>
+${note('「<b>step で外が白 → <code>1.0 -</code> で反転して中を白</b>」は、このあと 3-4 や 3-5 でも、同じ形で何度も使います。')}`,
+  task: '距離 <code>d</code> が <b>0.3 より小さいところだけ白</b>くして、円を描いてください（step と <code>1.0 -</code> を使います）。',
   code: C`
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 uv = fragCoord / iResolution.xy;
@@ -1158,17 +1183,17 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 uv = fragCoord / iResolution.xy;
   float d = length(uv - vec2(0.5));
-  float c = step(d, 0.3);
+  float c = 1.0 - step(0.3, d);
   fragColor = vec4(vec3(c), 1.0);
 }`,
   hints: [
-    '「d が 0.3 より小さい」とき 1.0 にしたい。step(edge, x) は「x が edge 以上」で 1.0 です。',
-    '<code>step(d, 0.3)</code> は「0.3 が d 以上」＝「d が 0.3 以下」で 1.0 になります。',
-    '<code>float c = step(d, 0.3);</code> を作って、<code>fragColor = vec4(vec3(c), 1.0);</code>',
+    'まずは 3-1 と同じ形で、<code>float c = step(0.3, d);</code> を色にしてみましょう。「d が 0.3 以上」＝<b>円の外</b>が白になります。',
+    '中と外を入れかえたい。3-1 の tips の「<code>1.0 - v</code> で白黒反転」を使います。',
+    '<code>float c = 1.0 - step(0.3, d);</code> を作って、<code>fragColor = vec4(vec3(c), 1.0);</code>',
   ],
   tips: [
     '円が<b>横に伸びている</b>ことに気付きましたか？ 次のレッスンで直します。',
-    '<code>1.0 - step(0.3, d)</code> と書いても同じ意味です。',
+    '<code>step(d, 0.3)</code> のように順番を入れかえても、同じ円になります（「0.3 が d 以上」＝「d が 0.3 以下」）。',
   ],
 },
 {
@@ -1217,8 +1242,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   body: `
 <p><b>四角形</b>は、<code>abs()</code> で上下左右を折りたたんでから、x と y の<b>大きいほう</b>（<code>max</code>）で判断します。</p>
 ${snip(`
-vec2 p = abs(uv);                        // 4つの象限を1つに折りたたむ
-float box = step(max(p.x, p.y), 0.2);    // 正方形`)}
+vec2 p = abs(uv);                             // 4つの象限を1つに折りたたむ
+float box = 1.0 - step(0.2, max(p.x, p.y));   // 正方形`)}
 <p>0 と 1 で表した形どうしは、計算で組み合わせられます。</p>
 <ul>
 <li><code>max(a, b)</code> … 合体（どちらか）</li>
@@ -2337,21 +2362,28 @@ ${snip('vec3 color = mix(dark, light, smoothstep(0.4, 0.6, uv.y));')}`,
 '3-3': {
   title: 'Draw a circle — length', goal: 'Draw a circle using distance',
   body: `
-<p>A circle is "<b>all the points whose distance from the center is less than the radius</b>".</p>
-${cmpE('<code>ellipse(x, y, w, h);</code><br>You place a circle shape.', 'Each pixel <b>measures its distance from the center</b><br>and decides whether it is inside or outside.')}
-<p>You can measure distance with <code>length()</code>.</p>
+<p>A circle is "<b>all the points whose distance from the center is less than the radius</b>". Processing had a function for measuring distance, too.</p>
+${cmpE('<code>float d = dist(x, y, cx, cy);</code><br>Measure the distance between two points.', '<code>float d = length(uv - c);</code><br><b>The same thing.</b> Subtract the center c from uv, then measure the length.')}
+<p>In Processing you "place" a circle with <code>ellipse()</code>. In a shader, <b>each pixel measures its distance from the center</b> and decides whether it is inside or outside.</p>
 ${snip('float d = length(uv - vec2(0.5));   // distance from the center (0.5, 0.5)')}
-<p>If you first show the distance <code>d</code> itself as a color, the center is black and it gets whiter further out. Check the numbers with the Pixel inspector, too.</p>
-<p>Then use step to decide "is d less than 0.3?" — and you have a circle.</p>`,
-  task: 'Draw a circle by making it white <b>only where the distance <code>d</code> is less than 0.3</b> (use step).',
+<p>The starting code shows the distance <code>d</code> itself as a color. The center is black, and it gets whiter further out.</p>
+${guessE([
+  ['What is d for the pixel in the middle, <code>(0.5, 0.5)</code>?', '<b>0.0</b>. It is the center itself, so the distance is zero. That is why it is pure black.'],
+  ['Around the middle of the left edge, <code>(0.0, 0.5)</code>?', '<b>0.5</b>. It is 0.5 away from the center, sideways. The color is a half-bright gray.'],
+  ['Around the top-right corner, <code>(1.0, 1.0)</code>?', '<b>About 0.71</b>. Diagonals are farther than straight across, so it is more than 0.5.'],
+  ['So where on the screen are the pixels where <b>d is less than 0.3</b>?', 'In a <b>round area</b> around the center. That is your circle.'],
+])}
+<p>Now just cut it with step, like in 3-1. <code>step(0.3, d)</code> is white where "d is 0.3 or more" — that is, <b>outside the circle</b>. You want the inside to be white, so flip black and white with <code>1.0 -</code>, from the 3-1 tips.</p>
+${note('"<b>step makes the outside white → flip it with <code>1.0 -</code> to make the inside white</b>" — you will use this same pattern again in 3-4 and 3-5.')}`,
+  task: 'Draw a circle by making it white <b>only where the distance <code>d</code> is less than 0.3</b> (use step and <code>1.0 -</code>).',
   hints: [
-    'You want 1.0 when "d is less than 0.3". step(edge, x) gives 1.0 when "x is at least edge".',
-    '<code>step(d, 0.3)</code> is 1.0 when "0.3 is at least d" — that is, "d is 0.3 or less".',
-    'Make <code>float c = step(d, 0.3);</code> and then <code>fragColor = vec4(vec3(c), 1.0);</code>',
+    'First, like in 3-1, try showing <code>float c = step(0.3, d);</code> as a color. Where "d is 0.3 or more" — <b>outside the circle</b> — turns white.',
+    'You want to swap inside and outside. Use "<code>1.0 - v</code> swaps black and white" from the 3-1 tips.',
+    'Make <code>float c = 1.0 - step(0.3, d);</code> and then <code>fragColor = vec4(vec3(c), 1.0);</code>',
   ],
   tips: [
     'Did you notice the circle is <b>stretched sideways</b>? We fix that in the next lesson.',
-    '<code>1.0 - step(0.3, d)</code> means the same thing.',
+    'Swapping the order, like <code>step(d, 0.3)</code>, gives the same circle ("0.3 is at least d" = "d is 0.3 or less").',
   ],
   codeTr: [
     ['// 中心 (0.5, 0.5) からの距離', '// Distance from the center (0.5, 0.5)'],
@@ -2386,8 +2418,8 @@ ${snip('vec2 uv = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;')}
   body: `
 <p>For a <b>square</b>, first fold up/down and left/right with <code>abs()</code>, then decide using the <b>larger</b> of x and y (<code>max</code>).</p>
 ${snip(`
-vec2 p = abs(uv);                        // fold the four quarters into one
-float box = step(max(p.x, p.y), 0.2);    // a square`)}
+vec2 p = abs(uv);                             // fold the four quarters into one
+float box = 1.0 - step(0.2, max(p.x, p.y));   // a square`)}
 <p>Shapes made of 0s and 1s can be combined with math:</p>
 <ul>
 <li><code>max(a, b)</code> … merge (either one)</li>
